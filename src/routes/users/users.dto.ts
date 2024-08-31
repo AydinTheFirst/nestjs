@@ -17,6 +17,6 @@ export const UpdateUserSchema = z
     email: z.string().email(),
     displayName: z.string().min(3),
   })
-  .partial();
+  .required();
 
 export type UpdateUserDto = z.infer<typeof UpdateUserSchema>;

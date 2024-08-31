@@ -1,9 +1,18 @@
-import { Controller, Delete, Get, Param, Post } from "@nestjs/common";
+import {
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from "@nestjs/common";
 import { TokensService } from "./tokens.service";
 import { GetUser } from "@/decorators";
 import { User } from "@prisma/client";
+import { AuthGuard } from "@/guards";
 
 @Controller("tokens")
+@UseGuards(AuthGuard)
 export class TokensController {
   constructor(private tokensService: TokensService) {}
 
@@ -18,12 +27,12 @@ export class TokensController {
   }
 
   @Post()
-  async create(@GetUser() user: User) {
-    return await this.tokensService.create(user);
+  async create(@GetUser("id") userId: string) {
+    return await this.tokensService.create(userId);
   }
 
   @Delete(":id")
-  async delete(@Param("id") id: string) {
-    return await this.tokensService.delete(id);
+  async delete(@GetUser("id") userId: string, @Param("id") id: string) {
+    return await this.tokensService.delete(userId, id);
   }
 }

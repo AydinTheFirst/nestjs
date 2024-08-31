@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { User } from "@prisma/client";
 import { PrismaService } from "@/prisma";
 
@@ -22,22 +22,35 @@ export class TokensService {
     });
   }
 
-  async create(user: User) {
+  async create(userId: string) {
     const token = await this.prisma.token.create({
       data: {
         expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
-        userId: user.id,
+        userId,
       },
     });
 
     return token;
   }
 
-  async delete(id: string) {
-    return await this.prisma.token.delete({
+  async delete(userId: string, id: string) {
+    const token = await this.prisma.token.findFirst({
+      where: {
+        id,
+        userId,
+      },
+    });
+
+    if (!token) {
+      throw new NotFoundException("Token not found");
+    }
+
+    await this.prisma.token.delete({
       where: {
         id,
       },
     });
+
+    return true;
   }
 }
